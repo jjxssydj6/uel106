@@ -141,14 +141,16 @@
       ];
 
       function searchArtist(query) {
+        // On s'assure que l'URL est parfaitement construite pour le HTTPS
+        const baseDeezerUrl =
+          "https://api.deezer.com/search/artist?q=" + encodeURIComponent(query);
         const url =
-          "https://corsproxy.io/?https://api.deezer.com/search/artist?q=" +
-          encodeURIComponent(query);
+          "https://corsproxy.io/?" + encodeURIComponent(baseDeezerUrl);
 
         fetch(url)
           .then((res) => res.json())
           .then((data) => {
-            if (!data.data.length) {
+            if (!data.data || !data.data.length) {
               nameEl.textContent = "Aucun résultat";
               audioEl.src = "";
               return;
@@ -157,20 +159,28 @@
             const artist = data.data[0];
             nameEl.textContent = artist.name;
 
-            // 🔥 on récupère PLUSIEURS titres
+            // Récupération des titres avec le même format de proxy
+            const topTracksUrl = `https://api.deezer.com/artist/${artist.id}/top?limit=10`;
             return fetch(
-              `https://corsproxy.io/?https://api.deezer.com/artist/${artist.id}/top?limit=10`,
+              "https://corsproxy.io/?" + encodeURIComponent(topTracksUrl),
             );
           })
           .then((res) => res?.json())
           .then((tracks) => {
-            if (!tracks || !tracks.data.length) return;
+            if (!tracks || !tracks.data || !tracks.data.length) return;
 
-            // 🎲 choix aléatoire
             const randomIndex = Math.floor(Math.random() * tracks.data.length);
-            audioEl.src = tracks.data[randomIndex].preview;
+            // On s'assure que le preview est bien chargé en HTTPS
+            const trackSrc = tracks.data[randomIndex].preview.replace(
+              "http://",
+              "https://",
+            );
+            audioEl.src = trackSrc;
           })
-          .catch((err) => console.error("Erreur Deezer :", err));
+          .catch((err) => {
+            console.error("Erreur Deezer :", err);
+            nameEl.textContent = "Erreur de connexion";
+          });
       }
 
       // clic sur le bouton
@@ -194,3 +204,4 @@
     </footer>
   </body>
 </html>
+
