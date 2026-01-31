@@ -1,6 +1,196 @@
-<html>
-  <head></head>
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mon Portfolio</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
   <body>
-    <h1>Hello Github</h1>
+    <header class="banniere">
+      <h1>Portfolio</h1>
+      <nav>
+        <a href="./index.html">Accueil</a>
+        <a href="./projets.html">Projets</a>
+      </nav>
+      <h2 class="nom">Jessie DURAND</h2>
+    </header>
+
+    <section class="gridtop">
+      <section class="presentation">
+        <h2>À propos de moi</h2>
+        <p>
+          Je suis une étudiante passionnée par la création de sites web et
+          d'applications innovantes.
+        </p>
+        <h3>Mes coordonnées</h3>
+        <p><a href="tel:0622650110">06 22 65 01 10</a></p>
+        <p>
+          <a href="mailto:jessydurandj6@gmail.com">jessydurandj6@gmail.com</a>
+        </p>
+        <p>1 rue chevreul 49130 Les Ponts-de-Cé</p>
+      </section>
+
+      <div class="API">
+        <h2 id="artist-name">Recherche un artiste</h2>
+
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Ex : Daft Punk"
+          style="margin: 10px; padding: 8px; width: 80%"
+        />
+
+        <button id="search-btn">Rechercher</button>
+        <audio id="artist-audio" controls></audio>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="cv">
+        <h2>Formation</h2>
+        <h3>DEUST Webmaster et Métiers de l'Internet</h3>
+        <p>Université de Limoges | 87000</p>
+        <p class="date">2025 /2026</p>
+
+        <h3>DU PaRéO (Passeport Pour Réussir et s'Orienter)</h3>
+        <p>Université Catholique de l'Ouest |49000 Angers</p>
+        <p class="date">janvier 2025 / juin 2025</p>
+
+        <h3>Baccalauréat</h3>
+        <p>Lycée Sainte-Marie | 39000 Lons-le-Saunier</p>
+        <p class="date">2024</p>
+
+        <h2>Expérience Professionnelle</h2>
+        <h3>Jury Jeune</h3>
+        <p>Festival Les RDV de l’Aventure | 39000 Lons-le-Saunier</p>
+        <p class="date">sept. 2023 / janv. 2024</p>
+
+        <h3>Cadet de la Gendarmerie</h3>
+        <p>Gendarmerie Nationale | 39000 Lons-le-Saunier</p>
+        <p class="date">oct. 2022 / juill. 2023</p>
+
+        <h3>Stage en fleuristerie | Assistante fleuriste</h3>
+        <p>Florentine | 39200 Saint-Claude</p>
+        <p class="date">21 au 24 juin 2022</p>
+
+        <h3>Participation au SNU 2022</h3>
+        <p>Service National Universel | 71000 Mâcon</p>
+        <p class="date">13 au 25 fév. 2022</p>
+      </section>
+
+      <section class="competences">
+        <h2>Mes compétences</h2>
+        <ul class="liste-principale">
+          <li>
+            Logiciels :
+            <ul>
+              <li>Wix</li>
+            </ul>
+          </li>
+          <li>
+            Langages :
+            <ul>
+              <li>HTML</li>
+              <li>CSS</li>
+            </ul>
+          </li>
+          <li>
+            Bureautique :
+            <ul>
+              <li>PowerPoint</li>
+              <li>Word</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2>Centres d'intérêt</h2>
+        <ul class="liste-principale">
+          <li>Création multimédia</li>
+          <li>Culture Visuelle</li>
+          <li>Création Manuelle</li>
+        </ul>
+
+        <h2>Atouts clés</h2>
+        <ul class="liste-principale">
+          <li>Créativité & Esthétique</li>
+          <li>Autonomie & Initiative</li>
+          <li>Rigueur & Esprit d'équipe</li>
+          <li>Analyse & Esprit critique</li>
+        </ul>
+      </section>
+    </div>
+
+    <script>
+      const input = document.getElementById("search-input");
+      const btn = document.getElementById("search-btn");
+
+      const nameEl = document.getElementById("artist-name");
+      const audioEl = document.getElementById("artist-audio");
+
+      const artistsRandom = [
+        "daft punk",
+        "stromae",
+        "adele",
+        "nirvana",
+        "coldplay",
+        "queen",
+        "billie eilish",
+        "eminem",
+      ];
+
+      function searchArtist(query) {
+        const url =
+          "https://corsproxy.io/?https://api.deezer.com/search/artist?q=" +
+          encodeURIComponent(query);
+
+        fetch(url)
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data.data.length) {
+              nameEl.textContent = "Aucun résultat";
+              audioEl.src = "";
+              return;
+            }
+
+            const artist = data.data[0];
+            nameEl.textContent = artist.name;
+
+            // 🔥 on récupère PLUSIEURS titres
+            return fetch(
+              `https://corsproxy.io/?https://api.deezer.com/artist/${artist.id}/top?limit=10`,
+            );
+          })
+          .then((res) => res?.json())
+          .then((tracks) => {
+            if (!tracks || !tracks.data.length) return;
+
+            // 🎲 choix aléatoire
+            const randomIndex = Math.floor(Math.random() * tracks.data.length);
+            audioEl.src = tracks.data[randomIndex].preview;
+          })
+          .catch((err) => console.error("Erreur Deezer :", err));
+      }
+
+      // clic sur le bouton
+      btn.addEventListener("click", () => {
+        const value = input.value.trim();
+
+        if (value === "") {
+          const random =
+            artistsRandom[Math.floor(Math.random() * artistsRandom.length)];
+          searchArtist(random);
+        } else {
+          searchArtist(value);
+        }
+      });
+    </script>
+
+    <footer>
+      <p>
+        <a href="mailto:jessydurandj6@gmail.com">Contact</a>
+      </p>
+    </footer>
   </body>
 </html>
