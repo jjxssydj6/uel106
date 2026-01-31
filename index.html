@@ -142,8 +142,8 @@
 
       function searchArtist(query) {
         const url =
-          "https://api.allorigins.win/get?url=" +
-          encodeURIComponent("https://api.deezer.com/search/artist?q=" + query);
+          "https://corsproxy.io/?https://api.deezer.com/search/artist?q=" +
+          encodeURIComponent(query);
 
         fetch(url)
           .then((res) => res.json())
