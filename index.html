@@ -33,17 +33,17 @@
       </section>
 
       <div class="API">
-        <h2 id="artist-name">Recherche un artiste</h2>
+        <h2 id="artist-name">Recherche une musique</h2>
 
         <input
           type="text"
-          id="search-input"
-          placeholder="Ex : Daft Punk"
-          style="margin: 10px; padding: 8px; width: 80%"
+          id="searchInput"
+          placeholder="Entrez le titre d'une chanson..."
         />
-
-        <button id="search-btn">Rechercher</button>
-        <audio id="artist-audio" controls></audio>
+        <button onClick="searchSong()">Rechercher</button>
+        <div id="errorMessage"></div>
+        <img id="artwork" />
+        <audio id="player" controls></audio>
       </div>
     </section>
 
@@ -123,68 +123,52 @@
     </div>
 
     <script>
-      const input = document.getElementById("search-input");
-      const btn = document.getElementById("search-btn");
+      async function searchSong() {
+        const errorDiv = document.getElementById("errorMessage");
+        if (errorDiv) errorDiv.style.display = "none";
 
-      const nameEl = document.getElementById("artist-name");
-      const audioEl = document.getElementById("artist-audio");
-
-      const artistsRandom = [
-        "daft punk",
-        "stromae",
-        "adele",
-        "nirvana",
-        "coldplay",
-        "queen",
-        "billie eilish",
-        "eminem",
-      ];
-
-      function searchArtist(query) {
-        const url =
-          "https://corsproxy.io/?https://api.deezer.com/search/artist?q=" +
-          encodeURIComponent(query);
-
-        fetch(url)
-          .then((res) => res.json())
-          .then((data) => {
-            if (!data.data.length) {
-              nameEl.textContent = "Aucun résultat";
-              audioEl.src = "";
-              return;
-            }
-
-            const artist = data.data[0];
-            nameEl.textContent = artist.name;
-
-            // 🔥 on récupère PLUSIEURS titres
-            return fetch(
-              `https://corsproxy.io/?https://api.deezer.com/artist/${artist.id}/top?limit=10`,
-            );
-          })
-          .then((res) => res?.json())
-          .then((tracks) => {
-            if (!tracks || !tracks.data.length) return;
-
-            // 🎲 choix aléatoire
-            const randomIndex = Math.floor(Math.random() * tracks.data.length);
-            audioEl.src = tracks.data[randomIndex].preview;
-          })
-          .catch((err) => console.error("Erreur Deezer :", err));
-      }
-
-      // clic sur le bouton
-      btn.addEventListener("click", () => {
-        const value = input.value.trim();
-
-        if (value === "") {
-          const random =
-            artistsRandom[Math.floor(Math.random() * artistsRandom.length)];
-          searchArtist(random);
-        } else {
-          searchArtist(value);
+        const searchInput = document.getElementById("searchInput").value.trim();
+        if (!searchInput) {
+          if (errorDiv) {
+            errorDiv.textContent = "Veuillez entrer un titre de chanson.";
+            errorDiv.style.display = "block";
+          }
+          return;
         }
-      });
+
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchInput)}&entity=song&limit=1`;
+
+        try {
+          const response = await fetch(url);
+          const json = await response.json();
+
+          if (!json.results || json.results.length === 0) {
+            if (errorDiv) {
+              errorDiv.textContent =
+                "Aucune chanson trouvée. Essayez une autre recherche.";
+              errorDiv.style.display = "block";
+            }
+            return;
+          }
+
+          const { previewUrl, artworkUrl100 } = json.results[0];
+
+          const player = document.getElementById("player");
+          player.src = previewUrl;
+          player.load();
+          player.play();
+
+          const artwork = document.getElementById("artwork");
+          artwork.src = artworkUrl100;
+        } catch (error) {
+          if (errorDiv) {
+            errorDiv.textContent =
+              "Erreur lors de la recherche. Veuillez réessayer.";
+            errorDiv.style.display = "block";
+          }
+          console.error("Erreur lors de la recherche:", error);
+        }
+      }
     </script>
 
     <footer>
